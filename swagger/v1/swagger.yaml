@@ -3,7 +3,131 @@ openapi: 3.0.1
 info:
   title: API V1
   version: v1
-paths: {}
+paths:
+  "/api/v1/users/{id}/follow/{target_user_id}":
+    post:
+      summary: Follow a user
+      tags:
+      - Relationships
+      parameters:
+      - name: id
+        in: path
+        description: User ID
+        required: true
+        schema:
+          type: integer
+      - name: target_user_id
+        in: path
+        description: Target User ID
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: User followed successfully
+        '404':
+          description: User not found
+        '422':
+          description: Cannot follow yourself
+  "/api/v1/users/{id}/unfollow/{target_user_id}":
+    delete:
+      summary: Unfollow a user
+      tags:
+      - Relationships
+      parameters:
+      - name: id
+        in: path
+        description: User ID
+        required: true
+        schema:
+          type: integer
+      - name: target_user_id
+        in: path
+        description: Target User ID
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: User unfollowed successfully
+        '404':
+          description: User not found
+  "/api/v1/users/{id}/followers":
+    get:
+      summary: Retrieves followers of a user
+      tags:
+      - Relationships
+      parameters:
+      - name: id
+        in: path
+        description: User ID
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Followers retrieved successfully
+        '404':
+          description: User not found
+  "/api/v1/users/{id}/following":
+    get:
+      summary: Retrieves following list of a user
+      tags:
+      - Relationships
+      parameters:
+      - name: id
+        in: path
+        description: User ID
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Following list retrieved successfully
+        '404':
+          description: User not found
+  "/api/v1/users":
+    get:
+      summary: Retrieves a list of users
+      tags:
+      - Users
+      responses:
+        '200':
+          description: Users retrieved successfully
+  "/api/v1/users/{id}":
+    get:
+      summary: Retrieves a specific user
+      tags:
+      - Users
+      parameters:
+      - name: id
+        in: path
+        description: User ID
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: User retrieved successfully
+        '404':
+          description: User not found
+  "/api/v1/users/{id}/following_sleep_records":
+    get:
+      summary: Retrieves sleep records of followed users from the last week
+      tags:
+      - Users
+      parameters:
+      - name: id
+        in: path
+        description: User ID
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Following sleep records retrieved successfully
+        '404':
+          description: User not found
 servers:
 - url: http://{defaultHost}
   variables:
