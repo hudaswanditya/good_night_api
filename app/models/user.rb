@@ -12,7 +12,7 @@ class User < ApplicationRecord
   def follow(user)
     return if self == user || following?(user)
 
-    relationships.create!(following_id: user.id)
+    relationships.find_or_create_by(following_id: user.id)
   end
 
   def unfollow(user)
@@ -20,11 +20,11 @@ class User < ApplicationRecord
   end
 
   def following?(user)
-    followed_users.loaded? ? followed_users.include?(user) : relationships.exists?(following_id: user.id)
+    relationships.exists?(following_id: user.id)
   end
 
   def follower?(user)
-    followers.loaded? ? followers.include?(user) : reverse_relationships.exists?(follower_id: user.id)
+    reverse_relationships.exists?(follower_id: user.id)
   end
 
   def following_sleep_records_last_week
@@ -32,9 +32,22 @@ class User < ApplicationRecord
     end_time = 1.week.ago.end_of_week
 
     SleepRecord
-      .joins(:user) # Avoids N+1 queries
-      .where(user_id: followed_users.select(:id), clock_in: start_time..end_time)
+      .joins(:user)
+      .where(users: { id: followed_users.pluck(:id) })
+      .where(clock_in: start_time..end_time)
       .select("sleep_records.*, (EXTRACT(EPOCH FROM (clock_out - clock_in)) / 3600) AS sleep_duration")
       .order("sleep_duration DESC")
+  end
+
+  def cached_followed_users
+    Rails.cache.fetch("user_#{id}_followed_users", expires_in: 10.minutes) do
+      followed_users.select(:id, :username).to_a
+    end
+  end
+
+  def cached_followers
+    Rails.cache.fetch("user_#{id}_followers", expires_in: 10.minutes) do
+      followers.select(:id, :username).to_a
+    end
   end
 end

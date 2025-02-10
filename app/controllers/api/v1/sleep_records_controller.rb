@@ -1,14 +1,15 @@
 module Api
   module V1
     class SleepRecordsController < ApplicationController
-      before_action :set_user, only: %i[index start_sleep stop_sleep]
+      before_action :set_user_with_records, only: %i[index]
+      before_action :set_user, only: %i[start_sleep stop_sleep]
 
       # GET /api/v1/users/:user_id/sleep_records
       def index
-        records = @user.sleep_records.includes(:user).order(created_at: :desc)
+        sleep_records = @user.sleep_records.order(created_at: :desc).select(:id, :clock_in, :clock_out, :created_at, :updated_at)
 
-        if records.any?
-          render json: { user: @user, sleep_records: records }
+        if sleep_records.any?
+          render json: { user: { id: @user.id, username: @user.username }, sleep_records: sleep_records }
         else
           render json: { message: "No sleep records found." }, status: :ok
         end
@@ -29,8 +30,13 @@ module Api
 
       private
 
+      def set_user_with_records
+        @user = User.includes(:sleep_records).select(:id, :username).find_by(id: params[:user_id])
+        render json: { error: "User not found" }, status: :not_found unless @user
+      end
+
       def set_user
-        @user = User.find_by(id: params[:user_id])
+        @user = User.select(:id, :username).find_by(id: params[:user_id])
         render json: { error: "User not found" }, status: :not_found unless @user
       end
     end

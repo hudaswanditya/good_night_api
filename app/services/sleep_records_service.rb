@@ -4,38 +4,36 @@ class SleepRecordsService
   end
 
   def stop_sleep
-    last_record = @user.sleep_records.order(clock_in: :desc).limit(1).take
+    last_record = @user.sleep_records.where(clock_out: nil).order(clock_in: :desc).lock("FOR UPDATE").limit(1).take
 
-    if last_record.nil? || last_record.clock_in.nil?
-      return { error: "No active sleep session to stop.", status: :unprocessable_entity }
-    elsif last_record.clock_out.present?
+    if last_record.nil?
       return { error: "Already clocked out. Start a new session first.", status: :unprocessable_entity }
     end
 
-    SleepRecordJob.perform_later(@user.id, :stop_sleep)
+    if last_record.clock_out.present?
+      return { error: "Already clocked out. Start a new session first.", status: :unprocessable_entity }
+    end
+
+    unless Rails.cache.read("sleep_job_#{@user.id}_stop")
+      Rails.cache.write("sleep_job_#{@user.id}_stop", true, expires_in: 5.seconds)
+      SleepRecordJob.set(wait: 1.second).perform_later(@user.id, :stop_sleep)
+    end
 
     { message: "Clock-out request received and processing in background.", status: :accepted }
   end
 
-
   def start_sleep
-    last_record = @user.sleep_records.order(clock_in: :desc).limit(1).take
+    last_record = @user.sleep_records.where(clock_out: nil).order(clock_in: :desc).lock("FOR UPDATE").limit(1).take
 
-    if last_record.nil?
-      return enqueue_start_sleep
-    end
-
-    if last_record.clock_out.nil?
+    if last_record
       return { error: "Already clocked in. Please stop sleep before starting again.", status: :unprocessable_entity }
     end
 
-    enqueue_start_sleep
-  end
+    unless Rails.cache.read("sleep_job_#{@user.id}_start")
+      Rails.cache.write("sleep_job_#{@user.id}_start", true, expires_in: 5.seconds)
+      SleepRecordJob.set(wait: 1.second).perform_later(@user.id, :start_sleep)
+    end
 
-  private
-
-  def enqueue_start_sleep
-    SleepRecordJob.perform_later(@user.id, :start_sleep)
     { message: "Clock-in request received and processing in background.", status: :accepted }
   end
 end

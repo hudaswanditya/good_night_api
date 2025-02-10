@@ -17,17 +17,21 @@ module Api
       end
 
       def followers
-        render json: format_users(@user.followers.limit(50))
+        followers = @user.followers.select(:id, :username).limit(50)
+        render json: format_users(followers)
       end
 
       def following
-        render json: format_users(@user.followed_users.limit(50))
+        following = @user.followed_users.select(:id, :username).limit(50)
+        render json: format_users(following)
       end
 
       private
 
       def set_users
-        @user, @target_user = User.where(id: [ params[:id], params[:target_user_id] ]).index_by(&:id).values_at(params[:id].to_i, params[:target_user_id].to_i)
+        @user, @target_user = User.where(id: [ params[:id], params[:target_user_id] ])
+                                  .index_by(&:id)
+                                  .values_at(params[:id].to_i, params[:target_user_id].to_i)
         render json: { error: "User not found" }, status: :not_found if @user.nil? || @target_user.nil?
       end
 
