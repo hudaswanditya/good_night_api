@@ -4,7 +4,7 @@ RSpec.describe Api::V1::UsersController, type: :request do
   let!(:users) { create_list(:user, 3) }
   let(:user_id) { users.first.id }
 
-  describe "GET /users" do
+  describe "GET /api/v1/users" do
     before { get "/api/v1/users" }
 
     it "returns all users" do
@@ -13,7 +13,7 @@ RSpec.describe Api::V1::UsersController, type: :request do
     end
   end
 
-  describe "GET /users/:id" do
+  describe "GET /api/v1/users/:id" do
     context "when the user exists" do
       before { get "/api/v1/users/#{user_id}" }
 

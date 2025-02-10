@@ -74,3 +74,11 @@ RSpec.configure do |config|
 
   config.include FactoryBot::Syntax::Methods # Allows `create(:user)` instead of `FactoryBot.create(:user)`
 end
+
+# Add `shoulda-matchers` configuration
+Shoulda::Matchers.configure do |config|
+  config.integrate do |with|
+    with.test_framework :rspec
+    with.library :rails
+  end
+end
