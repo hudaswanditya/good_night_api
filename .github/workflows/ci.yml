@@ -39,13 +39,6 @@ jobs:
       - name: Install dependencies
         run: bundle install
 
-      - name: Set up database
-        env:
-          RAILS_ENV: test
-        run: |
-          bin/rails db:create
-          bin/rails db:schema:load
-
       - name: Run RSpec
         env:
           RAILS_ENV: test
@@ -107,13 +100,6 @@ jobs:
 
       - name: Install dependencies
         run: bundle install
-
-      - name: Set up database
-        env:
-          RAILS_ENV: test
-        run: |
-          bin/rails db:create
-          bin/rails db:schema:load
 
       - name: Run RSpec with Coverage
         env:
