@@ -67,4 +67,10 @@ RSpec.configure do |config|
   config.filter_rails_from_backtrace!
   # arbitrary gems may also be filtered via:
   # config.filter_gems_from_backtrace("gem name")
+
+  config.before(:each) do
+    Faker::UniqueGenerator.clear # Clears unique Faker values before each test
+  end
+  
+  config.include FactoryBot::Syntax::Methods # Allows `create(:user)` instead of `FactoryBot.create(:user)`
 end
