@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-  before_action :set_user, only: [:show]
+  before_action :set_user, only: [ :show ]
 
   def index
     users = User.all
@@ -14,6 +14,6 @@ class UsersController < ApplicationController
 
   def set_user
     @user = User.find_by(id: params[:id])
-    return render json: { error: "User not found" }, status: :not_found unless @user
+    render json: { error: "User not found" }, status: :not_found unless @user
   end
 end

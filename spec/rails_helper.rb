@@ -71,6 +71,6 @@ RSpec.configure do |config|
   config.before(:each) do
     Faker::UniqueGenerator.clear # Clears unique Faker values before each test
   end
-  
+
   config.include FactoryBot::Syntax::Methods # Allows `create(:user)` instead of `FactoryBot.create(:user)`
 end
