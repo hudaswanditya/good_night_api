@@ -73,6 +73,10 @@ RSpec.configure do |config|
   end
 
   config.include FactoryBot::Syntax::Methods # Allows `create(:user)` instead of `FactoryBot.create(:user)`
+
+  config.before(:each) do
+    ActiveJob::Base.queue_adapter = :test
+  end
 end
 
 # Add `shoulda-matchers` configuration
