@@ -3,13 +3,13 @@ require 'rails_helper'
 RSpec.describe Api::V1::SleepRecordsController, type: :request do
   let(:user) { create(:user) }
   let!(:sleep_records) { create_list(:sleep_record, 5, user: user) }
-  let(:service) { instance_double(SleepRecordsService) } # Mock the service object
+  let(:service) { instance_double(SleepRecordsService) }
 
   before do
     allow(SleepRecordsService).to receive(:new).with(user).and_return(service)
   end
 
-  describe "GET /users/:user_id/sleep_records" do
+  describe "GET /api/v1/users/:user_id/sleep_records" do
     it "returns a list of sleep records without N+1 queries" do
       get "/api/v1/users/#{user.id}/sleep_records"
 
@@ -17,7 +17,7 @@ RSpec.describe Api::V1::SleepRecordsController, type: :request do
     end
   end
 
-  describe "POST /users/:user_id/sleep_records/start_sleep" do
+  describe "POST /api/v1/users/:user_id/sleep_records/start_sleep" do
     context "when starting a sleep session is successful" do
       let(:new_record) { build(:sleep_record, user: user, clock_out: nil) }
 
@@ -57,7 +57,7 @@ RSpec.describe Api::V1::SleepRecordsController, type: :request do
     end
   end
 
-  describe "PATCH /users/:user_id/sleep_records/stop_sleep" do
+  describe "PATCH /api/v1/users/:user_id/sleep_records/stop_sleep" do
     context "when stopping sleep is successful" do
       let(:updated_record) { build(:sleep_record, user: user, clock_out: Time.current) }
 
