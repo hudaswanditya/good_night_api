@@ -26,4 +26,15 @@ class User < ApplicationRecord
   def follower?(user)
     followers.loaded? ? followers.include?(user) : reverse_relationships.exists?(follower_id: user.id)
   end
+
+  def following_sleep_records_last_week
+    start_time = 1.week.ago.beginning_of_week
+    end_time = 1.week.ago.end_of_week
+
+    SleepRecord
+      .joins(:user) # Avoids N+1 queries
+      .where(user_id: followed_users.select(:id), clock_in: start_time..end_time)
+      .select("sleep_records.*, (EXTRACT(EPOCH FROM (clock_out - clock_in)) / 3600) AS sleep_duration")
+      .order("sleep_duration DESC")
+  end
 end
