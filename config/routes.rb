@@ -10,6 +10,7 @@ Rails.application.routes.draw do
             delete "unfollow/:target_user_id", to: "relationships#unfollow"
             get :followers, to: "relationships#followers"
             get :following, to: "relationships#following"
+            get :following_sleep_records
           end
 
           resources :sleep_records, only: [ :index, :create ] do

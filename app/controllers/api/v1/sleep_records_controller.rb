@@ -1,8 +1,9 @@
 module Api
   module V1
     class SleepRecordsController < ApplicationController
-      before_action :set_user
+      before_action :set_user, only: %i[index start_sleep stop_sleep]
 
+      # GET /api/v1/users/:user_id/sleep_records
       def index
         records = @user.sleep_records.includes(:user).order(created_at: :desc)
 
@@ -13,13 +14,13 @@ module Api
         end
       end
 
-      # POST /users/:user_id/sleep_records/start
+      # POST /api/v1/users/:user_id/sleep_records/start
       def start_sleep
         result = SleepRecordsService.new(@user).start_sleep
         render json: result.except(:status), status: result[:status]
       end
 
-      # PATCH /users/:user_id/sleep_records/stop
+      # PATCH /api/v1/users/:user_id/sleep_records/stop
       def stop_sleep
         result = SleepRecordsService.new(@user).stop_sleep
         render json: result.except(:status), status: result[:status]
@@ -28,7 +29,8 @@ module Api
       private
 
       def set_user
-        @user = User.select(:id, :username).find(params[:user_id])
+        @user = User.find_by(id: params[:user_id])
+        render json: { error: "User not found" }, status: :not_found unless @user
       end
     end
   end

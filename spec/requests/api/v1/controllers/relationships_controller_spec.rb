@@ -76,4 +76,37 @@ RSpec.describe Api::V1::RelationshipsController, type: :request do
       expect(json.first["username"]).to eq(target_user.username)
     end
   end
+
+  describe "GET /api/v1/users/:id/following_sleep_records" do
+    let(:friend1) { create(:user) }
+    let(:friend2) { create(:user) }
+
+    before do
+      create(:relationship, follower: user, following: friend1)
+      create(:relationship, follower: user, following: friend2)
+
+      create(:sleep_record, user: friend1, clock_in: 1.week.ago.beginning_of_week, clock_out: 1.week.ago.beginning_of_week + 6.hours)
+      create(:sleep_record, user: friend2, clock_in: 1.week.ago.beginning_of_week, clock_out: 1.week.ago.beginning_of_week + 8.hours)
+    end
+
+    it "returns sleep records of all following users from the last week, sorted by sleep duration" do
+      get "/api/v1/users/#{user.id}/following_sleep_records"
+
+      expect(response).to have_http_status(:ok)
+
+      json_response = JSON.parse(response.body)
+
+      expect(json_response.length).to eq(2)
+      expect(json_response.first["user_id"]).to eq(friend2.id) # Friend with longer sleep duration should come first
+      expect(json_response.last["user_id"]).to eq(friend1.id) # Friend with shorter sleep duration should come last
+    end
+
+    it "returns an empty array if no friends have sleep records from last week" do
+      SleepRecord.delete_all
+
+      get "/api/v1/users/#{user.id}/following_sleep_records"
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)).to eq([])
+    end
+  end
 end
