@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe SleepRecordsController, type: :request do
+RSpec.describe Api::V1::SleepRecordsController, type: :request do
   let(:user) { create(:user) }
   let!(:sleep_records) { create_list(:sleep_record, 5, user: user) }
   let(:service) { instance_double(SleepRecordsService) } # Mock the service object
@@ -11,7 +11,7 @@ RSpec.describe SleepRecordsController, type: :request do
 
   describe "GET /users/:user_id/sleep_records" do
     it "returns a list of sleep records without N+1 queries" do
-      get "/users/#{user.id}/sleep_records"
+      get "/api/v1/users/#{user.id}/sleep_records"
 
       expect(response).to have_http_status(:ok)
     end
@@ -28,7 +28,7 @@ RSpec.describe SleepRecordsController, type: :request do
       end
 
       it "calls the service and starts a new sleep session" do
-        post "/users/#{user.id}/sleep_records/start_sleep"
+        post "/api/v1/users/#{user.id}/sleep_records/start_sleep"
 
         expect(response).to have_http_status(:created)
         json = JSON.parse(response.body)
@@ -47,7 +47,7 @@ RSpec.describe SleepRecordsController, type: :request do
       end
 
       it "prevents starting a new sleep session with 422" do
-        post "/users/#{user.id}/sleep_records/start_sleep"
+        post "/api/v1/users/#{user.id}/sleep_records/start_sleep"
 
         expect(response).to have_http_status(:unprocessable_entity)
         json = JSON.parse(response.body)
@@ -68,7 +68,7 @@ RSpec.describe SleepRecordsController, type: :request do
       end
 
       it "calls the service and stops the sleep session" do
-        patch "/users/#{user.id}/sleep_records/stop_sleep"
+        patch "/api/v1/users/#{user.id}/sleep_records/stop_sleep"
 
         expect(response).to have_http_status(:ok)
         json = JSON.parse(response.body)
@@ -86,7 +86,7 @@ RSpec.describe SleepRecordsController, type: :request do
       end
 
       it "returns 422 for no active session" do
-        patch "/users/#{user.id}/sleep_records/stop_sleep"
+        patch "/api/v1/users/#{user.id}/sleep_records/stop_sleep"
 
         expect(response).to have_http_status(:unprocessable_entity)
         json = JSON.parse(response.body)
@@ -103,7 +103,7 @@ RSpec.describe SleepRecordsController, type: :request do
       end
 
       it "returns 422 when stopping an already clocked-out session" do
-        patch "/users/#{user.id}/sleep_records/stop_sleep"
+        patch "/api/v1/users/#{user.id}/sleep_records/stop_sleep"
 
         expect(response).to have_http_status(:unprocessable_entity)
         json = JSON.parse(response.body)

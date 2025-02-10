@@ -1,3 +1,5 @@
+require 'rails_helper'
+
 class SleepRecord < ApplicationRecord
   belongs_to :user
 
