@@ -16,14 +16,15 @@ module Api
 
       # POST /api/v1/users/:user_id/sleep_records/start
       def start_sleep
-        result = SleepRecordsService.new(@user).start_sleep
-        render json: result.except(:status), status: result[:status]
+        service = SleepRecordsService.new(@user)
+        result = service.start_sleep
+        render json: { message: result[:message] }, status: result[:status]
       end
 
       # PATCH /api/v1/users/:user_id/sleep_records/stop
       def stop_sleep
         result = SleepRecordsService.new(@user).stop_sleep
-        render json: result.except(:status), status: result[:status]
+        render json: { message: result[:message] }, status: result[:status]
       end
 
       private
