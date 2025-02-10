@@ -5,9 +5,11 @@ gem "pg", "~> 1.1"
 gem "puma", ">= 5.0"
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
-gem "solid_cache"
-gem "solid_queue"
 gem "solid_cable"
+
+gem "redis"
+gem "sidekiq" # Background jobs
+gem "rack-attack" # Rate limiting
 
 gem "bootsnap", require: false
 gem "kamal", require: false
