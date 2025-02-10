@@ -30,3 +30,6 @@
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
+
+# Ignore .DS_Store files that are uploaded.
+.DS_Store
