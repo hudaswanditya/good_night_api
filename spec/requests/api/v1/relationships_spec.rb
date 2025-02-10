@@ -1,70 +1,126 @@
-require 'rails_helper'
+require 'swagger_helper'
 
-RSpec.describe "API::V1::Relationships", type: :request do
-  let!(:user) { create(:user) }
-  let!(:target_user) { create(:user) }
+RSpec.describe 'Relationships API', type: :request do
+  path '/api/v1/users/{id}/follow/{target_user_id}' do
+    post 'Follow a user' do
+      tags 'Relationships'
+      produces 'application/json'
+      parameter name: :id, in: :path, type: :integer, description: 'User ID'
+      parameter name: :target_user_id, in: :path, type: :integer, description: 'Target User ID'
 
-  def json
-    JSON.parse(response.body)
-  end
+      response '200', 'User followed successfully' do
+        let(:user) { create(:user) }
+        let(:target_user) { create(:user) }
+        let(:id) { user.id }
+        let(:target_user_id) { target_user.id }
 
-  describe "POST /api/v1/users/:id/follow/:target_user_id" do
-    context "when following a user" do
-      it "returns success response" do
-        post "/api/v1/users/#{user.id}/follow/#{target_user.id}"
+        run_test! do |response|
+          json = JSON.parse(response.body)
+          expect(json['status']).to eq('success')
+          expect(json['message']).to eq('User followed successfully')
+        end
+      end
 
-        expect(response).to have_http_status(:ok)
-        expect(json['status']).to eq('success')
-        expect(json['message']).to eq('User followed successfully')
+      response '404', 'User not found' do
+        let(:id) { 9999 }
+        let(:target_user_id) { 8888 }
+        run_test!
+      end
+
+      response '422', 'Cannot follow yourself' do
+        let(:user) { create(:user) }
+        let(:id) { user.id }
+        let(:target_user_id) { user.id }
+        run_test!
       end
     end
   end
 
-  describe "DELETE /api/v1/users/:id/unfollow/:target_user_id" do
-    before do
-      user.follow(target_user)
-    end
+  path '/api/v1/users/{id}/unfollow/{target_user_id}' do
+    delete 'Unfollow a user' do
+      tags 'Relationships'
+      produces 'application/json'
+      parameter name: :id, in: :path, type: :integer, description: 'User ID'
+      parameter name: :target_user_id, in: :path, type: :integer, description: 'Target User ID'
 
-    context "when unfollowing a user" do
-      it "returns success response" do
-        delete "/api/v1/users/#{user.id}/unfollow/#{target_user.id}"
+      response '200', 'User unfollowed successfully' do
+        let(:user) { create(:user) }
+        let(:target_user) { create(:user) }
+        let(:id) { user.id }
+        let(:target_user_id) { target_user.id }
 
-        expect(response).to have_http_status(:ok)
-        expect(json['status']).to eq('success')
-        expect(json['message']).to eq('User unfollowed successfully')
+        before { user.follow(target_user) }
+
+        run_test! do |response|
+          json = JSON.parse(response.body)
+          expect(json['status']).to eq('success')
+          expect(json['message']).to eq('User unfollowed successfully')
+        end
+      end
+
+      response '404', 'User not found' do
+        let(:id) { 9999 }
+        let(:target_user_id) { 8888 }
+        run_test!
       end
     end
   end
 
-  describe "GET /api/v1/users/:id/followers" do
-    before do
-      target_user.follow(user)
-    end
+  path '/api/v1/users/{id}/followers' do
+    get 'Retrieves followers of a user' do
+      tags 'Relationships'
+      produces 'application/json'
+      parameter name: :id, in: :path, type: :integer, description: 'User ID'
 
-    it "retrieves followers list" do
-      get "/api/v1/users/#{user.id}/followers"
+      response '200', 'Followers retrieved successfully' do
+        let(:user) { create(:user) }
+        let(:follower) { create(:user) }
+        let(:id) { user.id }
 
-      expect(response).to have_http_status(:ok)
-      expect(json['status']).to eq('success')
-      expect(json['message']).to eq('Followers retrieved successfully')
-      expect(json['data']).to be_an(Array)
-      expect(json['data'].first['id']).to eq(target_user.id)
+        before { follower.follow(user) }
+
+        run_test! do |response|
+          json = JSON.parse(response.body)
+          expect(json['status']).to eq('success')
+          expect(json['message']).to eq('Followers retrieved successfully')
+          expect(json['data'].size).to eq(1)
+          expect(json['data'].first['id']).to eq(follower.id)
+        end
+      end
+
+      response '404', 'User not found' do
+        let(:id) { 9999 }
+        run_test!
+      end
     end
   end
 
-  describe "GET /api/v1/users/:id/following" do
-    before do
-      user.follow(target_user)
-    end
+  path '/api/v1/users/{id}/following' do
+    get 'Retrieves following list of a user' do
+      tags 'Relationships'
+      produces 'application/json'
+      parameter name: :id, in: :path, type: :integer, description: 'User ID'
 
-    it "retrieves following list" do
-      get "/api/v1/users/#{user.id}/following"
+      response '200', 'Following list retrieved successfully' do
+        let(:user) { create(:user) }
+        let(:following_user) { create(:user) }
+        let(:id) { user.id }
 
-      expect(response).to have_http_status(:ok)
-      expect(json['status']).to eq('success')
-      expect(json['message']).to eq('Following list retrieved successfully')
-      expect(json['data']).to be_an(Array)
-      expect(json['data'].first['id']).to eq(target_user.id)
+        before { user.follow(following_user) }
+
+        run_test! do |response|
+          json = JSON.parse(response.body)
+          expect(json['status']).to eq('success')
+          expect(json['message']).to eq('Following list retrieved successfully')
+          expect(json['data'].size).to eq(1)
+          expect(json['data'].first['id']).to eq(following_user.id)
+        end
+      end
+
+      response '404', 'User not found' do
+        let(:id) { 9999 }
+        run_test!
+      end
     end
   end
 end

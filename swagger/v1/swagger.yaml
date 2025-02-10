@@ -86,6 +86,57 @@ paths:
           description: Following list retrieved successfully
         '404':
           description: User not found
+  "/api/v1/users/{user_id}/sleep_records":
+    get:
+      summary: Retrieves a list of sleep records
+      tags:
+      - Sleep Records
+      parameters:
+      - name: user_id
+        in: path
+        description: User ID
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Sleep records retrieved successfully
+        '404':
+          description: User not found
+  "/api/v1/users/{user_id}/sleep_records/start_sleep":
+    post:
+      summary: Starts a sleep session
+      tags:
+      - Sleep Records
+      parameters:
+      - name: user_id
+        in: path
+        description: User ID
+        required: true
+        schema:
+          type: integer
+      responses:
+        '202':
+          description: Clock-in request received and processing in background
+        '404':
+          description: User not found
+  "/api/v1/users/{user_id}/sleep_records/stop_sleep":
+    patch:
+      summary: Stops a sleep session
+      tags:
+      - Sleep Records
+      parameters:
+      - name: user_id
+        in: path
+        description: User ID
+        required: true
+        schema:
+          type: integer
+      responses:
+        '202':
+          description: Clock-out request received and processing in background
+        '404':
+          description: User not found
   "/api/v1/users":
     get:
       summary: Retrieves a list of users
