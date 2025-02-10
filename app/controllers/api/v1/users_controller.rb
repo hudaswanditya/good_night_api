@@ -6,25 +6,45 @@ module Api
       # GET /api/v1/users
       def index
         users = User.select(:id, :username, :created_at).order(created_at: :desc)
-        render json: users
+        render_success("Users retrieved successfully", users)
       end
 
       # GET /api/v1/users/:id
       def show
-        render json: @user
+        render_success("User retrieved successfully", @user)
       end
 
       # GET /api/v1/users/:id/following_sleep_records
       def following_sleep_records
-        sleep_records = @user.following_sleep_records_last_week.includes(:user).select(:id, :user_id, :clock_in, :clock_out, :created_at)
-        render json: sleep_records
+        sleep_records = @user.following_sleep_records_last_week
+                             .includes(:user)
+                             .select(:id, :user_id, :clock_in, :clock_out, :created_at)
+        render_success("Following sleep records retrieved successfully", sleep_records)
       end
 
       private
 
       def set_user
         @user = User.select(:id, :username, :created_at).find_by(id: params[:id])
-        render json: { error: "User not found" }, status: :not_found unless @user
+        return if @user
+
+        render_error("User not found", [ "The requested user does not exist" ], :not_found)
+      end
+
+      def render_success(message, data)
+        render json: {
+          status: "success",
+          message: message,
+          data: data
+        }, status: :ok
+      end
+
+      def render_error(message, errors = [], status = :unprocessable_entity)
+        render json: {
+          status: "error",
+          message: message,
+          errors: errors
+        }, status: status
       end
     end
   end

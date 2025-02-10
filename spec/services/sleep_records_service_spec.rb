@@ -59,7 +59,7 @@ RSpec.describe SleepRecordsService do
         result = service.stop_sleep
 
         expect(result[:status]).to eq(:unprocessable_entity)
-        expect(result[:error]).to eq("Already clocked out. Start a new session first.")
+        expect(result[:error]).to eq("No active sleep session to stop.")
       end
     end
 
@@ -72,7 +72,7 @@ RSpec.describe SleepRecordsService do
         result = service.stop_sleep
 
         expect(result[:status]).to eq(:unprocessable_entity)
-        expect(result[:error]).to eq("Already clocked out. Start a new session first.")
+        expect(result[:error]).to eq("No active sleep session to stop.")
       end
     end
   end

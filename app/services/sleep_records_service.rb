@@ -7,7 +7,7 @@ class SleepRecordsService
     last_record = @user.sleep_records.where(clock_out: nil).order(clock_in: :desc).lock("FOR UPDATE").limit(1).take
 
     if last_record.nil?
-      return { error: "Already clocked out. Start a new session first.", status: :unprocessable_entity }
+      return { error: "No active sleep session to stop.", status: :unprocessable_entity }
     end
 
     if last_record.clock_out.present?
