@@ -14,8 +14,7 @@ gem "rack-attack" # Rate limiting
 gem "bootsnap", require: false
 gem "kamal", require: false
 
-# If API is used by a separate frontend (React, Vue, etc.), you need CORS
-# gem "rack-cors"
+gem "rack-cors"
 
 group :development do
   gem "brakeman", require: false
@@ -30,4 +29,6 @@ group :development, :test do
   gem "faker"
 
   gem "shoulda-matchers"
+
+  gem "rswag"
 end
