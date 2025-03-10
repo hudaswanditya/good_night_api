@@ -4,12 +4,24 @@ A sleep tracking application that helps users log their sleep patterns, connect 
 
 ## Update
 
-- Optimized caching & pagination for faster responses.
-- Removed redundant logic and ensured consistency.
-- Fixed test issues and improved API consistency.
-- Used caching to reduce database queries and improve scalability.
+### Future Optimization Strategy
+Critical Endpoint Optimization: Focus on optimizing the sleep_records endpoint, which is critical for the application's core functionality. This includes improving database query efficiency and enhancing the relationship management between users and sleep records.
 
-Now using k6 for load test:
+Scalability Enhancements: Continue refining the application to ensure it can handle even larger traffic volumes, particularly for high-priority endpoints.
+
+In the revised code for the users' endpoint, I have:
+
+- Optimized caching and pagination for faster response times.
+- Eliminated redundant logic to enhance consistency.
+- Fixed test issues and improved overall API uniformity.
+- Implemented caching to minimize database queries and enhance scalability.
+
+### Conduct Load Test using Grafana k6:
+Conducted stress testing using k6 to validate the application's ability to handle large volumes of traffic. The results are as follows:
+
+Users list endpoint: 92% success rate (4432 successful requests out of 4799).
+User details endpoint: 99% success rate (4778 successful requests out of 4799).
+Sleep records endpoint: 99% success rate (4798 successful requests out of 4799).
 - Installing k6 https://grafana.com/docs/k6/latest/set-up/install-k6/
 - Running stress test:
 ```
