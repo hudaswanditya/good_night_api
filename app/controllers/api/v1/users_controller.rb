@@ -9,11 +9,10 @@ module Api
         cache_key = "users_list_page_#{page}"
 
         users = Rails.cache.fetch(cache_key, expires_in: 10.minutes) do
-          User.select(:id, :username, :created_at)
-              .order(created_at: :desc)
-              .offset((page - 1) * 50)
-              .limit(50)
+          fetch_users_for_page(page)
         end
+
+        RefreshUsersCacheJob.perform_async(page)
 
         render_success("Users retrieved successfully", users)
       end
@@ -24,7 +23,14 @@ module Api
         @user = Rails.cache.read(cache_key)
 
         if @user.nil?
-          BatchUserLookupJob.perform_async([ params[:id] ])
+          @user = User.select(:id, :username, :created_at).find_by(id: params[:id])
+
+          if @user
+            Rails.cache.write(cache_key, @user, expires_in: 60.minutes)
+            BatchUserLookupJob.perform_async([ params[:id] ]) # Update cache in the background
+            return render_success("User retrieved successfully", @user)
+          end
+
           return render_error("User not found", [ "User does not exist" ], :not_found)
         end
 
@@ -33,6 +39,8 @@ module Api
 
       # GET /api/v1/users/:id/following_sleep_records
       def following_sleep_records
+        return render_error("User not found", :not_found) unless @user
+
         cache_key = "user_#{@user.id}_following_sleep_records"
 
         sleep_records = Rails.cache.fetch(cache_key, expires_in: 5.minutes) do
@@ -63,6 +71,13 @@ module Api
 
       def render_error(message, errors = [], status = :unprocessable_entity)
         render json: { status: "error", message: message, errors: errors }, status: status
+      end
+
+      def fetch_users_for_page(page)
+        User.select(:id, :username, :created_at)
+            .order(created_at: :desc)
+            .offset((page - 1) * 50)
+            .limit(50)
       end
     end
   end

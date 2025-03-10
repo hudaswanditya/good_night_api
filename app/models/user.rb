@@ -9,6 +9,8 @@ class User < ApplicationRecord
 
   validates :username, presence: true, uniqueness: { case_sensitive: false }
 
+  after_commit :invalidate_cache
+
   def follow(user)
     return if self == user || following?(user)
 
@@ -49,5 +51,11 @@ class User < ApplicationRecord
     Rails.cache.fetch("user_#{id}_followers", expires_in: 10.minutes) do
       followers.select(:id, :username).to_a
     end
+  end
+
+  private
+
+  def invalidate_cache
+    Rails.cache.delete("user_#{id}")
   end
 end

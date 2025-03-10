@@ -2,6 +2,20 @@
 
 A sleep tracking application that helps users log their sleep patterns, connect with friends, and gain insights into their sleeping habits. By following other users, individuals can compare their sleep durations and improve their sleep hygiene together.
 
+## Update
+
+- Optimized caching & pagination for faster responses.
+- Removed redundant logic and ensured consistency.
+- Fixed test issues and improved API consistency.
+- Used caching to reduce database queries and improve scalability.
+
+Now using k6 for load test:
+- Installing k6 https://grafana.com/docs/k6/latest/set-up/install-k6/
+- Running stress test:
+```
+k6 run users_stress_test.js
+```
+
 ## Description
 Good Night App allows users to clock in when they go to bed and clock out when they wake up. Users can follow friends to see their sleep records from the past week, ranked by sleep duration. This social approach to sleep tracking encourages better sleep habits and accountability among peers.
 

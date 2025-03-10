@@ -29,7 +29,7 @@ RSpec.describe 'Users API', type: :request do
       parameter name: :id, in: :path, type: :integer, description: 'User ID'
 
       response '200', 'User retrieved successfully' do
-        let(:user) { create(:user) }
+        let!(:user) { create(:user) }
         let(:id) { user.id }
 
         run_test! do |response|
@@ -40,7 +40,11 @@ RSpec.describe 'Users API', type: :request do
 
       response '404', 'User not found' do
         let(:id) { 9999 }
-        run_test!
+
+        run_test! do |response|
+          json = JSON.parse(response.body)
+          expect(json['message']).to eq("User not found")
+        end
       end
     end
   end
@@ -52,8 +56,8 @@ RSpec.describe 'Users API', type: :request do
       parameter name: :id, in: :path, type: :integer, description: 'User ID'
 
       response '200', 'Following sleep records retrieved successfully' do
-        let(:user) { create(:user) }
-        let(:followed_user) { create(:user) }
+        let!(:user) { create(:user) }
+        let!(:followed_user) { create(:user) }
         let(:id) { user.id }
 
         before do
@@ -70,7 +74,11 @@ RSpec.describe 'Users API', type: :request do
 
       response '404', 'User not found' do
         let(:id) { 9999 }
-        run_test!
+
+        run_test! do |response|
+          json = JSON.parse(response.body)
+          expect(json['message']).to eq("User not found")
+        end
       end
     end
   end

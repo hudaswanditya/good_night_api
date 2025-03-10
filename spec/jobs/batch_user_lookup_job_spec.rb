@@ -1,26 +1,45 @@
 require 'rails_helper'
+require 'sidekiq/testing'
+
+Sidekiq::Testing.fake! # Ensures jobs are stored in the test queue
 
 RSpec.describe BatchUserLookupJob, type: :job do
-  describe '#perform' do
-    let!(:user_1) { create(:user) }
-    let!(:user_2) { create(:user) }
-    let!(:user_3) { create(:user) }
+  let!(:users) { create_list(:user, 3) }
+  let(:user_ids) { users.map(&:id) }
+  let(:cache_keys) { users.map { |user| "user_#{user.id}" } }
 
-    it 'writes the users to the cache' do
-      user_ids = [ user_1.id, user_2.id, user_3.id ]
+  before do
+    cache_keys.each { |key| Rails.cache.delete(key) } # Ensure cache is empty before test
+  end
 
-      expect(Rails.cache).to receive(:write).with("user_#{user_1.id}", anything, expires_in: 10.minutes)
-      expect(Rails.cache).to receive(:write).with("user_#{user_2.id}", anything, expires_in: 10.minutes)
-      expect(Rails.cache).to receive(:write).with("user_#{user_3.id}", anything, expires_in: 10.minutes)
+  it 'queues the job' do
+    expect {
+      BatchUserLookupJob.perform_async(user_ids)
+    }.to change(BatchUserLookupJob.jobs, :size).by(1) # Ensure job is queued
+  end
 
-      BatchUserLookupJob.perform_now(user_ids)
-    end
+  it 'fetches and caches users asynchronously' do
+  BatchUserLookupJob.perform_async(user_ids)
+  BatchUserLookupJob.drain # Ensure Sidekiq processes the job
 
-    it 'fetches users from the database' do
-      user_ids = [ user_1.id, user_2.id, user_3.id ]
+  users.each do |user|
+    cached_user = Rails.cache.read("user_#{user.id}")
+    puts "DEBUG: Cached user - #{cached_user.inspect}" # Debugging line
 
-      expect(User).to receive(:where).with(id: user_ids).and_call_original
-      BatchUserLookupJob.perform_now(user_ids)
+    expect(cached_user).to be_present
+    expect(cached_user["id"]).to eq(user.id)
+  end
+end
+
+
+  it 'does not cache non-existing users' do
+    non_existing_ids = [ 9999, 8888 ]
+
+    BatchUserLookupJob.perform_async(non_existing_ids)
+    BatchUserLookupJob.drain
+
+    non_existing_ids.each do |id|
+      expect(Rails.cache.read("user_#{id}")).to be_nil
     end
   end
 end
