@@ -31,5 +31,8 @@ module GoodNightApi
 
     config.active_job.queue_adapter = :sidekiq
     config.middleware.use Rack::Attack
+
+    config.middleware.use ActionDispatch::Cookies
+    config.middleware.use ActionDispatch::Session::CookieStore, key: "_good_night_session"
   end
 end
