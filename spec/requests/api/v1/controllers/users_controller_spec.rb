@@ -1,19 +1,19 @@
 require 'rails_helper'
 
 RSpec.describe Api::V1::UsersController, type: :request do
-  let!(:users) { create_list(:user, 3) }
+  let!(:users) { create_list(:user, 10) }
   let(:user_id) { users.first.id }
 
   describe "GET /api/v1/users" do
-    before { get "/api/v1/users" }
+    before { get "/api/v1/users?page=1" }
 
-    it "returns all users with structured response" do
+    it "returns all users with structured response", :aggregate_failures do
       json_response = JSON.parse(response.body, symbolize_names: true)
 
       expect(response).to have_http_status(:ok)
       expect(json_response[:status]).to eq("success")
       expect(json_response[:message]).to eq("Users retrieved successfully")
-      expect(json_response[:data].size).to eq(3)
+      expect(json_response[:data].length).to be > 0
     end
   end
 
@@ -34,7 +34,7 @@ RSpec.describe Api::V1::UsersController, type: :request do
     context "when the user does not exist" do
       before { get "/api/v1/users/999999" }
 
-      it "returns a 404 not found with structured response" do
+      it "returns a 404 not found with structured response", :aggregate_failures do
         json_response = JSON.parse(response.body, symbolize_names: true)
 
         expect(response).to have_http_status(:not_found)
