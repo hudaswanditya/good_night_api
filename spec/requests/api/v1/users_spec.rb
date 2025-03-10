@@ -2,18 +2,21 @@ require 'swagger_helper'
 
 RSpec.describe 'Users API', type: :request do
   path '/api/v1/users' do
-    get 'Retrieves a list of users' do
+    get 'Retrieves a paginated list of users' do
       tags 'Users'
       produces 'application/json'
+      parameter name: :page, in: :query, type: :integer, description: 'Page number (default: 1)'
 
       response '200', 'Users retrieved successfully' do
+        let(:page) { 1 }
+
         before do
-          create_list(:user, 3)
+          create_list(:user, 10)
         end
 
         run_test! do |response|
           json = JSON.parse(response.body)
-          expect(json['data'].size).to eq(3)
+          expect(json['data'].size).to eq(10)
         end
       end
     end
