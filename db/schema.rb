@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_02_10_055959) do
+ActiveRecord::Schema[8.0].define(version: 2025_03_10_063937) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -31,6 +31,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_10_055959) do
     t.integer "duration"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["clock_in"], name: "index_sleep_records_on_clock_in"
+    t.index ["clock_out"], name: "index_sleep_records_on_clock_out"
+    t.index ["user_id", "clock_in"], name: "index_sleep_records_on_user_id_and_clock_in"
+    t.index ["user_id", "duration"], name: "index_sleep_records_on_user_id_and_duration"
     t.index ["user_id"], name: "index_sleep_records_on_user_id"
   end
 
@@ -40,6 +44,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_10_055959) do
     t.datetime "updated_at", null: false
     t.integer "followers_count", default: 0, null: false
     t.integer "following_count", default: 0, null: false
+    t.index ["followers_count"], name: "index_users_on_followers_count"
+    t.index ["following_count"], name: "index_users_on_following_count"
+    t.index ["id"], name: "index_users_on_id"
     t.index ["username"], name: "index_users_on_username", unique: true
   end
 
