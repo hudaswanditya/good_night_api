@@ -37,8 +37,8 @@ RSpec.describe SleepRecordsService do
       it "does not allow starting a new session" do
         result = service.start_sleep
 
-        expect(result[:status]).to eq(:unprocessable_entity)
-        expect(result[:error]).to eq("Already clocked in. Please stop sleep before starting again.")
+        expect(result[:status]).to eq(:conflict)
+        expect(result[:message]).to eq("Already clocked in. Please stop sleep before starting again.")
       end
     end
   end
@@ -59,7 +59,7 @@ RSpec.describe SleepRecordsService do
         result = service.stop_sleep
 
         expect(result[:status]).to eq(:unprocessable_entity)
-        expect(result[:error]).to eq("No active sleep session to stop.")
+        expect(result[:message]).to eq("No active sleep session to stop.")
       end
     end
 
@@ -72,7 +72,7 @@ RSpec.describe SleepRecordsService do
         result = service.stop_sleep
 
         expect(result[:status]).to eq(:unprocessable_entity)
-        expect(result[:error]).to eq("No active sleep session to stop.")
+        expect(result[:message]).to eq("No active sleep session to stop.")
       end
     end
   end
