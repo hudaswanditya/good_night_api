@@ -8,7 +8,7 @@ RSpec.describe 'Relationships API', type: :request do
       parameter name: :id, in: :path, type: :integer, description: 'User ID'
       parameter name: :target_user_id, in: :path, type: :integer, description: 'Target User ID'
 
-      response '200', 'User followed successfully' do
+      response '202', 'User followed successfully' do
         let(:user) { create(:user) }
         let(:target_user) { create(:user) }
         let(:id) { user.id }
@@ -16,8 +16,8 @@ RSpec.describe 'Relationships API', type: :request do
 
         run_test! do |response|
           json = JSON.parse(response.body)
-          expect(json['status']).to eq('success')
-          expect(json['message']).to eq('User followed successfully')
+          expect(json['status']).to eq('processing')
+          expect(json['message']).to eq('Follow request is being processed')
         end
       end
 
@@ -43,7 +43,7 @@ RSpec.describe 'Relationships API', type: :request do
       parameter name: :id, in: :path, type: :integer, description: 'User ID'
       parameter name: :target_user_id, in: :path, type: :integer, description: 'Target User ID'
 
-      response '200', 'User unfollowed successfully' do
+      response '202', 'User unfollowed successfully' do
         let(:user) { create(:user) }
         let(:target_user) { create(:user) }
         let(:id) { user.id }
@@ -53,8 +53,8 @@ RSpec.describe 'Relationships API', type: :request do
 
         run_test! do |response|
           json = JSON.parse(response.body)
-          expect(json['status']).to eq('success')
-          expect(json['message']).to eq('User unfollowed successfully')
+          expect(json['status']).to eq('processing')
+          expect(json['message']).to eq('Unfollow request is being processed')
         end
       end
 

@@ -1,30 +1,31 @@
 module Api
   module V1
     class RelationshipsController < ApplicationController
-      before_action :set_users, only: [ :follow, :unfollow ]
-      before_action :set_user_with_associations, only: [ :followers, :following ]
+      before_action :set_users, only: %i[follow unfollow]
+      before_action :set_user, only: %i[followers following]
 
       def follow
-        if @user == @target_user
-          return json_response(:unprocessable_entity, "Cannot follow yourself")
-        end
+        return json_response(:unprocessable_entity, "Cannot follow yourself") if @user == @target_user
+        return json_response(:unprocessable_entity, "Already following this user") if @user.following?(@target_user)
 
-        @user.follow(@target_user)
-        json_response(:ok, "User followed successfully")
+        RelationshipJob.perform_async(@user.id, @target_user.id, "follow")
+        json_response(:accepted, "Follow request is being processed")
       end
 
       def unfollow
-        @user.unfollow(@target_user)
-        json_response(:ok, "User unfollowed successfully")
+        return json_response(:unprocessable_entity, "Not following this user") unless @user.following?(@target_user)
+
+        RelationshipJob.perform_async(@user.id, @target_user.id, "unfollow")
+        json_response(:accepted, "Unfollow request is being processed")
       end
 
       def followers
-        followers = @user.followers.select(:id, :username).limit(50)
+        followers = @user.followers.pluck(:id, :username).map { |id, username| { id:, username: } }
         json_response(:ok, "Followers retrieved successfully", followers)
       end
 
       def following
-        following = @user.followed_users.select(:id, :username).limit(50)
+        following = @user.followed_users.pluck(:id, :username).map { |id, username| { id:, username: } }
         json_response(:ok, "Following list retrieved successfully", following)
       end
 
@@ -40,14 +41,14 @@ module Api
         json_response(:not_found, "User not found")
       end
 
-      def set_user_with_associations
-        @user = User.includes(:followers, :followed_users).find_by(id: params[:id])
+      def set_user
+        @user = User.find_by(id: params[:id])
         json_response(:not_found, "User not found") unless @user
       end
 
       def json_response(status, message, data = nil)
         render json: {
-          status: status == :ok ? "success" : "error",
+          status: status == :ok ? "success" : status == :accepted ? "processing" : "error",
           message: message,
           data: data
         }, status: status

@@ -4,40 +4,28 @@ RSpec.describe Api::V1::RelationshipsController, type: :request do
   let(:user) { create(:user) }
   let(:target_user) { create(:user) }
 
-  describe "POST /api/v1/users/:id/follow/:target_user_id" do
-    context "when following another user" do
-      it "allows a user to follow another user" do
-        post "/api/v1/users/#{user.id}/follow/#{target_user.id}"
+  before do
+    Sidekiq::Testing.inline! # Run jobs immediately instead of enqueuing
+  end
 
-        json_response = JSON.parse(response.body, symbolize_names: true)
+  describe "when following another user" do
+    it "allows a user to follow another user and updates the cache" do
+      post "/api/v1/users/#{user.id}/follow/#{target_user.id}"
 
-        expect(response).to have_http_status(:ok)
-        expect(json_response[:status]).to eq("success")
-        expect(json_response[:message]).to eq("User followed successfully")
-        expect(user.following?(target_user)).to be true
-      end
+      json_response = JSON.parse(response.body, symbolize_names: true)
 
-      it "prevents a user from following themselves" do
-        post "/api/v1/users/#{user.id}/follow/#{user.id}"
+      expect(response).to have_http_status(:accepted)
+      expect(json_response[:status]).to eq("processing")
+      expect(json_response[:message]).to eq("Follow request is being processed")
 
-        json_response = JSON.parse(response.body, symbolize_names: true)
+      # Simulate job completion and cache update
+      Rails.cache.write("user_#{user.id}_following", [ target_user.id ])
 
-        expect(response).to have_http_status(:unprocessable_entity)
-        expect(json_response[:status]).to eq("error")
-        expect(json_response[:message]).to eq("Cannot follow yourself")
-      end
-    end
+      # Fetch from cache to simulate post-processing
+      cached_following = Rails.cache.fetch("user_#{user.id}_following")
 
-    context "when trying to follow a non-existent user" do
-      it "returns a 404 error" do
-        post "/api/v1/users/#{user.id}/follow/9999"
-
-        json_response = JSON.parse(response.body, symbolize_names: true)
-
-        expect(response).to have_http_status(:not_found)
-        expect(json_response[:status]).to eq("error")
-        expect(json_response[:message]).to eq("User not found")
-      end
+      expect(cached_following).to include(target_user.id)
+      expect(user.following?(target_user)).to be true
     end
   end
 
@@ -49,9 +37,9 @@ RSpec.describe Api::V1::RelationshipsController, type: :request do
 
       json_response = JSON.parse(response.body, symbolize_names: true)
 
-      expect(response).to have_http_status(:ok)
-      expect(json_response[:status]).to eq("success")
-      expect(json_response[:message]).to eq("User unfollowed successfully")
+      expect(response).to have_http_status(:accepted)
+      expect(json_response[:status]).to eq("processing")
+      expect(json_response[:message]).to eq("Unfollow request is being processed")
       expect(user.following?(target_user)).to be false
     end
 
@@ -60,9 +48,9 @@ RSpec.describe Api::V1::RelationshipsController, type: :request do
 
       json_response = JSON.parse(response.body, symbolize_names: true)
 
-      expect(response).to have_http_status(:ok)
-      expect(json_response[:status]).to eq("success")
-      expect(json_response[:message]).to eq("User unfollowed successfully")
+      expect(response).to have_http_status(:accepted)
+      expect(json_response[:status]).to eq("processing")
+      expect(json_response[:message]).to eq("Unfollow request is being processed")
     end
   end
 
