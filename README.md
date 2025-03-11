@@ -3,30 +3,9 @@
 A sleep tracking application that helps users log their sleep patterns, connect with friends, and gain insights into their sleeping habits. By following other users, individuals can compare their sleep durations and improve their sleep hygiene together.
 
 ## Update
+The newly optimized application now operates **more efficiently and asynchronously** through enhanced **caching strategies and optimized database queries**. By leveraging **intelligent caching mechanisms**, the system minimizes redundant queries, ensuring **faster response times and improved scalability**.  
 
-### Future Optimization Strategy
-Critical Endpoint Optimization: Focus on optimizing the sleep_records endpoint, which is critical for the application's core functionality. This includes improving database query efficiency and enhancing the relationship management between users and sleep records.
-
-Scalability Enhancements: Continue refining the application to ensure it can handle even larger traffic volumes, particularly for high-priority endpoints.
-
-In the revised code for the users' endpoint, I have:
-
-- Optimized caching and pagination for faster response times.
-- Eliminated redundant logic to enhance consistency.
-- Fixed test issues and improved overall API uniformity.
-- Implemented caching to minimize database queries and enhance scalability.
-
-### Conduct Load Test using Grafana k6:
-Conducted stress testing using k6 to validate the application's ability to handle large volumes of traffic. The results are as follows:
-
-Users list endpoint: 92% success rate (4432 successful requests out of 4799).
-User details endpoint: 99% success rate (4778 successful requests out of 4799).
-Sleep records endpoint: 99% success rate (4798 successful requests out of 4799).
-- Installing k6 https://grafana.com/docs/k6/latest/set-up/install-k6/
-- Running stress test:
-```
-k6 run users_stress_test.js
-```
+With **asynchronous processing** integrated into key operations, the application can handle **higher traffic loads** without blocking user interactions. These improvements make the system **more responsive, reliable, and capable of scaling effortlessly** as demand grows.
 
 ## Description
 Good Night App allows users to clock in when they go to bed and clock out when they wake up. Users can follow friends to see their sleep records from the past week, ranked by sleep duration. This social approach to sleep tracking encourages better sleep habits and accountability among peers.
